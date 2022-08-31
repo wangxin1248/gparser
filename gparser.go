@@ -11,8 +11,13 @@ import (
 
 // Match 利用原生parser完成表达式与输入数据匹配任务
 func Match(expr string, data map[string]interface{}) (bool, error) {
+	// 空表达式默认匹配成功
 	if expr == "" {
 		return true, nil
+	}
+	// 空数据默认匹配失败
+	if data == nil {
+		return false, nil
 	}
 	// 解析表达式
 	parseExpr, err := parser.ParseExpr(expr)

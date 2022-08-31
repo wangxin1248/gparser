@@ -73,7 +73,7 @@ func TestGoParser_Match(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "test_case6",
+			name: "test_case7",
 			expr: "!(a == 1 && b == 2 && c == \"test\" && d == false)",
 			data: map[string]interface{}{
 				"a": 1,
@@ -84,7 +84,7 @@ func TestGoParser_Match(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "test_case7",
+			name: "test_case8",
 			expr: "!(a == 1 && b == 2) || (c == \"test\" && d == false)",
 			data: map[string]interface{}{
 				"a": 1,
@@ -92,6 +92,18 @@ func TestGoParser_Match(t *testing.T) {
 				"c": "test",
 				"d": false,
 			},
+			want: true,
+		},
+		{
+			name: "test_case9",
+			expr: "a == 1 && b == 2",
+			data: nil,
+			want: false,
+		},
+		{
+			name: "test_case10",
+			expr: "",
+			data: nil,
 			want: true,
 		},
 	}
