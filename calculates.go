@@ -62,6 +62,50 @@ func calculateForInt64(x, y interface{}, op token.Token) interface{} {
 	}
 }
 
+// 计算float类型表达式
+func calculateForFloat(x, y interface{}, op token.Token) interface{} {
+	x, err := castType(x, TypeFloat)
+	if err != nil {
+		return err
+	}
+	y, err = castType(y, TypeFloat)
+	if err != nil {
+		return err
+	}
+	xFloat, xok := x.(float64)
+	yFloat, yok := y.(float64)
+	if !xok || !yok {
+		return errors.New(fmt.Sprintf("%v %v %v eval failed", x, op, y))
+	}
+
+	switch op {
+	case token.EQL:
+		return xFloat == yFloat
+	case token.NEQ:
+		return xFloat != yFloat
+	case token.GTR:
+		return xFloat > yFloat
+	case token.LSS:
+		return xFloat < yFloat
+	case token.GEQ:
+		return xFloat >= yFloat
+	case token.LEQ:
+		return xFloat <= yFloat
+	case token.ADD:
+		return xFloat + yFloat
+	case token.SUB:
+		return xFloat - yFloat
+	case token.MUL:
+		return xFloat * yFloat
+	case token.QUO:
+		if yFloat == 0 {
+			return 0.0
+		}
+		return xFloat / yFloat
+	}
+	return errors.New(fmt.Sprintf("unsupported binary operator: %s", op.String()))
+}
+
 // 计算string类型表达式
 func calculateForString(x, y interface{}, op token.Token) interface{} {
 	x, err := castType(x, TypeString)

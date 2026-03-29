@@ -11,7 +11,61 @@ var funcNameMap = map[string]func(args []ast.Expr, data map[string]interface{}) 
 func init() {
 	funcNameMap = map[string]func(args []ast.Expr, data map[string]interface{}) interface{}{
 		"in_array": inArray,
+		"max":      maxFunc,
+		"min":      minFunc,
 	}
+}
+
+// maxFunc 取多个数中的最大值
+func maxFunc(args []ast.Expr, data map[string]interface{}) interface{} {
+	if len(args) == 0 {
+		return errors.New("func max requires at least one argument")
+	}
+	var maxFloat float64
+	for i, arg := range args {
+		val := eval(arg, data)
+		if err, ok := val.(error); ok {
+			return err
+		}
+		f, err := castType(val, TypeFloat)
+		if err != nil {
+			return err
+		}
+		num, ok := f.(float64)
+		if !ok {
+			return errors.New("func max argument is not numeric")
+		}
+		if i == 0 || num > maxFloat {
+			maxFloat = num
+		}
+	}
+	return maxFloat
+}
+
+// minFunc 取多个数中的最小值
+func minFunc(args []ast.Expr, data map[string]interface{}) interface{} {
+	if len(args) == 0 {
+		return errors.New("func min requires at least one argument")
+	}
+	var minFloat float64
+	for i, arg := range args {
+		val := eval(arg, data)
+		if err, ok := val.(error); ok {
+			return err
+		}
+		f, err := castType(val, TypeFloat)
+		if err != nil {
+			return err
+		}
+		num, ok := f.(float64)
+		if !ok {
+			return errors.New("func min argument is not numeric")
+		}
+		if i == 0 || num < minFloat {
+			minFloat = num
+		}
+	}
+	return minFloat
 }
 
 // inArray 判断变量是否存在在数组中

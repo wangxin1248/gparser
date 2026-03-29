@@ -51,9 +51,14 @@ func eval(expr ast.Expr, data map[string]interface{}) interface{} {
 		op := expr.Op
 		// 规则计算（按照规则表达式中变量的类型进行匹配）
 		switch y.(type) {
+		case float64:
+			return calculateForFloat(x, y, op)
 		case int:
 			return calculateForInt(x, y, op)
 		case int64:
+			if _, ok := x.(float64); ok {
+				return calculateForFloat(x, y, op)
+			}
 			return calculateForInt64(x, y, op)
 		case string:
 			return calculateForString(x, y, op)
@@ -95,6 +100,12 @@ func getlitValue(basicLit *ast.BasicLit) interface{} {
 	switch basicLit.Kind {
 	case token.INT:
 		value, err := strconv.ParseInt(basicLit.Value, 10, 64)
+		if err != nil {
+			return err
+		}
+		return value
+	case token.FLOAT:
+		value, err := strconv.ParseFloat(basicLit.Value, 64)
 		if err != nil {
 			return err
 		}

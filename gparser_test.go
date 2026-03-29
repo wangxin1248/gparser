@@ -106,6 +106,105 @@ func TestGoParser_Match(t *testing.T) {
 			data: nil,
 			want: true,
 		},
+		{
+			name: "test_case11 max",
+			expr: "max(a, b) == 3",
+			data: map[string]interface{}{
+				"a": 1,
+				"b": 3,
+			},
+			want: true,
+		},
+		{
+			name: "test_case12 min",
+			expr: "min(a, b) == 1",
+			data: map[string]interface{}{
+				"a": 1,
+				"b": 3,
+			},
+			want: true,
+		},
+		{
+			name: "test_case13 max multi",
+			expr: "max(a, b, 5) == 5",
+			data: map[string]interface{}{
+				"a": 1,
+				"b": 3,
+			},
+			want: true,
+		},
+		{
+			name: "test_case14 max float",
+			expr: "max(a, b) == 2.5",
+			data: map[string]interface{}{
+				"a": 1.2,
+				"b": 2.5,
+			},
+			want: true,
+		},
+		{
+			name: "test_case15 min float",
+			expr: "min(a, b) == 1.2",
+			data: map[string]interface{}{
+				"a": 1.2,
+				"b": 2.5,
+			},
+			want: true,
+		},
+		{
+			name: "test_case16 int arithmetic",
+			expr: "a + b * c == 11",
+			data: map[string]interface{}{
+				"a": 2,
+				"b": 3,
+				"c": 3,
+			},
+			want: true,
+		},
+		{
+			name: "test_case17 division",
+			expr: "a / b == 2",
+			data: map[string]interface{}{
+				"a": 10,
+				"b": 5,
+			},
+			want: true,
+		},
+		{
+			name: "test_case18 bool and or",
+			expr: "(a == 1 && b == 2) || c == 1",
+			data: map[string]interface{}{
+				"a": 1,
+				"b": 3,
+				"c": 1,
+			},
+			want: true,
+		},
+		{
+			name: "test_case19 non function fallback",
+			expr: "in_array(c, []int{1,2,3})",
+			data: map[string]interface{}{
+				"c": 2,
+			},
+			want: true,
+		},
+		{
+			name: "test_case20 string compare",
+			expr: "a == \"hello\"",
+			data: map[string]interface{}{
+				"a": "hello",
+			},
+			want: true,
+		},
+		{
+			name: "test_case21 comparison mix float",
+			expr: "a < b && b <= 5.2",
+			data: map[string]interface{}{
+				"a": 3,
+				"b": 5.2,
+			},
+			want: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
