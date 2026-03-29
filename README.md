@@ -3,6 +3,7 @@
 基于 golang 原生语法解析器（[parser](https://pkg.go.dev/go/parser)）实现的轻量级规则引擎。支持操作：
 
 - 规则匹配：`gparser.Match(ruleStr, params)`
+- 表达式计算：`gparser.Evaluate(expr, params)`
 
 下载方式：
 

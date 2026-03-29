@@ -10,32 +10,57 @@ import (
 )
 
 // Match 利用原生parser完成表达式与输入数据匹配任务
+func Evaluate(expr string, data map[string]interface{}) (interface{}, error) {
+	// 空表达式返回 nil
+	if expr == "" {
+		return nil, nil
+	}
+	if data == nil {
+		data = make(map[string]interface{})
+	}
+
+	// 解析表达式
+	parseExpr, err := parser.ParseExpr(expr)
+	if err != nil {
+		return nil, err
+	}
+
+	// 表达式中的 true、false 值被识别为变量
+	data["true"] = true
+	data["false"] = false
+
+	result := eval(parseExpr, data)
+	if errVal, ok := result.(error); ok {
+		return nil, errVal
+	}
+	return result, nil
+}
+
 func Match(expr string, data map[string]interface{}) (bool, error) {
 	// 空表达式默认匹配成功
 	if expr == "" {
 		return true, nil
 	}
+
 	// 空数据默认匹配失败
 	if data == nil {
 		return false, nil
 	}
-	// 解析表达式
-	parseExpr, err := parser.ParseExpr(expr)
+
+	result, err := Evaluate(expr, data)
 	if err != nil {
 		return false, err
 	}
-	// 表达式中的 true、false 值被识别为变量
-	data["true"] = true
-	data["false"] = false
 
-	// 匹配表达式与输入数据
-	result := eval(parseExpr, data)
-
-	// 返回匹配结果
-	if _, ok := result.(error); ok {
-		return false, result.(error)
+	boolResult, err := castType(result, "bool")
+	if err != nil {
+		return false, err
 	}
-	return result.(bool), nil
+
+	if v, ok := boolResult.(bool); ok {
+		return v, nil
+	}
+	return false, errors.New("expression result is not bool")
 }
 
 func eval(expr ast.Expr, data map[string]interface{}) interface{} {

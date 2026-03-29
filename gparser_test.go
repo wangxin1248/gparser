@@ -215,6 +215,52 @@ func TestGoParser_Match(t *testing.T) {
 	}
 }
 
+func TestGoParser_Evaluate(t *testing.T) {
+	tests := []struct {
+		name string
+		expr string
+		data map[string]interface{}
+		want interface{}
+	}{
+		{
+			name: "arithmetic int",
+			expr: "a + b",
+			data: map[string]interface{}{"a": 1, "b": 2},
+			want: int64(3),
+		},
+		{
+			name: "arithmetic float",
+			expr: "a + b",
+			data: map[string]interface{}{"a": 1.2, "b": 2.3},
+			want: 3.5,
+		},
+		{
+			name: "bool expression",
+			expr: "a == 1 && b == 2",
+			data: map[string]interface{}{"a": 1, "b": 2},
+			want: true,
+		},
+		{
+			name: "function max",
+			expr: "max(a,b,5)",
+			data: map[string]interface{}{"a": 1, "b": 3},
+			want: 5.0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := Evaluate(tt.expr, tt.data)
+			if err != nil {
+				t.Fatalf("Evaluate failed: %v", err)
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Evaluate(%q) = %#v, want %#v", tt.expr, got, tt.want)
+			}
+		})
+	}
+}
+
 func BenchmarkGoParser_Match(b *testing.B) {
 	// 规则表达式
 	expr := `(a == 1 && b == "b" && in_array(c, []int{100,99,98,97})) || (d == false)`
