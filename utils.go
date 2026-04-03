@@ -15,7 +15,7 @@ const (
 	TypeObject = "object"
 )
 
-// castType 基础类型转换，支持 string int64 bool float object 几种类型
+// castType basic type conversion, supports several types: string, int64, bool, float, object
 func castType(data interface{}, typeName string) (interface{}, error) {
 	if typeName == "" {
 		return data, nil

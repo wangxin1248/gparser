@@ -2,15 +2,18 @@ package gparser
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 )
 
 func TestGoParser_Match(t *testing.T) {
 	tests := []struct {
-		name string
-		expr string
-		data map[string]interface{}
-		want bool
+		name        string
+		expr        string
+		data        map[string]interface{}
+		want        bool
+		wantErr     bool
+		wantErrMsg  string
 	}{
 		{
 			name: "test_case1",
@@ -19,7 +22,8 @@ func TestGoParser_Match(t *testing.T) {
 				"a": 1,
 				"b": 2,
 			},
-			want: true,
+			want:    true,
+			wantErr: false,
 		},
 		{
 			name: "test_case2",
@@ -28,7 +32,8 @@ func TestGoParser_Match(t *testing.T) {
 				"a": 1,
 				"b": 3,
 			},
-			want: false,
+			want:    false,
+			wantErr: false,
 		},
 		{
 			name: "test_case3",
@@ -38,7 +43,8 @@ func TestGoParser_Match(t *testing.T) {
 				"b": 3,
 				"c": "test",
 			},
-			want: true,
+			want:    true,
+			wantErr: false,
 		},
 		{
 			name: "test_case4",
@@ -48,7 +54,8 @@ func TestGoParser_Match(t *testing.T) {
 				"b": 3,
 				"c": "test",
 			},
-			want: false,
+			want:    false,
+			wantErr: false,
 		},
 		{
 			name: "test_case5",
@@ -59,7 +66,8 @@ func TestGoParser_Match(t *testing.T) {
 				"c": "test",
 				"d": true,
 			},
-			want: true,
+			want:    true,
+			wantErr: false,
 		},
 		{
 			name: "test_case6",
@@ -70,7 +78,8 @@ func TestGoParser_Match(t *testing.T) {
 				"c": "test",
 				"d": true,
 			},
-			want: false,
+			want:    false,
+			wantErr: false,
 		},
 		{
 			name: "test_case7",
@@ -81,7 +90,8 @@ func TestGoParser_Match(t *testing.T) {
 				"c": "test",
 				"d": true,
 			},
-			want: true,
+			want:    true,
+			wantErr: false,
 		},
 		{
 			name: "test_case8",
@@ -92,19 +102,22 @@ func TestGoParser_Match(t *testing.T) {
 				"c": "test",
 				"d": false,
 			},
-			want: true,
+			want:    true,
+			wantErr: false,
 		},
 		{
 			name: "test_case9",
 			expr: "a == 1 && b == 2",
 			data: nil,
-			want: false,
+			want:    false,
+			wantErr: false,
 		},
 		{
 			name: "test_case10",
 			expr: "",
 			data: nil,
-			want: true,
+			want:    true,
+			wantErr: false,
 		},
 		{
 			name: "test_case11 max",
@@ -113,7 +126,8 @@ func TestGoParser_Match(t *testing.T) {
 				"a": 1,
 				"b": 3,
 			},
-			want: true,
+			want:    true,
+			wantErr: false,
 		},
 		{
 			name: "test_case12 min",
@@ -122,7 +136,8 @@ func TestGoParser_Match(t *testing.T) {
 				"a": 1,
 				"b": 3,
 			},
-			want: true,
+			want:    true,
+			wantErr: false,
 		},
 		{
 			name: "test_case13 max multi",
@@ -131,7 +146,8 @@ func TestGoParser_Match(t *testing.T) {
 				"a": 1,
 				"b": 3,
 			},
-			want: true,
+			want:    true,
+			wantErr: false,
 		},
 		{
 			name: "test_case14 max float",
@@ -140,7 +156,8 @@ func TestGoParser_Match(t *testing.T) {
 				"a": 1.2,
 				"b": 2.5,
 			},
-			want: true,
+			want:    true,
+			wantErr: false,
 		},
 		{
 			name: "test_case15 min float",
@@ -149,7 +166,8 @@ func TestGoParser_Match(t *testing.T) {
 				"a": 1.2,
 				"b": 2.5,
 			},
-			want: true,
+			want:    true,
+			wantErr: false,
 		},
 		{
 			name: "test_case16 int arithmetic",
@@ -159,7 +177,8 @@ func TestGoParser_Match(t *testing.T) {
 				"b": 3,
 				"c": 3,
 			},
-			want: true,
+			want:    true,
+			wantErr: false,
 		},
 		{
 			name: "test_case17 division",
@@ -168,7 +187,8 @@ func TestGoParser_Match(t *testing.T) {
 				"a": 10,
 				"b": 5,
 			},
-			want: true,
+			want:    true,
+			wantErr: false,
 		},
 		{
 			name: "test_case18 bool and or",
@@ -178,7 +198,8 @@ func TestGoParser_Match(t *testing.T) {
 				"b": 3,
 				"c": 1,
 			},
-			want: true,
+			want:    true,
+			wantErr: false,
 		},
 		{
 			name: "test_case19 non function fallback",
@@ -186,7 +207,8 @@ func TestGoParser_Match(t *testing.T) {
 			data: map[string]interface{}{
 				"c": 2,
 			},
-			want: true,
+			want:    true,
+			wantErr: false,
 		},
 		{
 			name: "test_case20 string compare",
@@ -194,7 +216,8 @@ func TestGoParser_Match(t *testing.T) {
 			data: map[string]interface{}{
 				"a": "hello",
 			},
-			want: true,
+			want:    true,
+			wantErr: false,
 		},
 		{
 			name: "test_case21 comparison mix float",
@@ -203,13 +226,32 @@ func TestGoParser_Match(t *testing.T) {
 				"a": 3,
 				"b": 5.2,
 			},
-			want: true,
+			want:    true,
+			wantErr: false,
+		},
+		{
+			name: "test_missing_parameter",
+			expr: "a == 1 && missing == 2",
+			data: map[string]interface{}{
+				"a": 1,
+			},
+			want:       false,
+			wantErr:    true,
+			wantErrMsg: "no parameter missing",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got, err := Match(tt.expr, tt.data); !reflect.DeepEqual(got, tt.want) || err != nil {
-				t.Errorf("goParser match failed, want=%v, got=%v, err=%v", tt.want, got, err)
+			got, err := Match(tt.expr, tt.data)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Match() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if tt.wantErr && err != nil && !strings.Contains(err.Error(), tt.wantErrMsg) {
+				t.Errorf("Match() error message = %v, wantErrMsg %v", err.Error(), tt.wantErrMsg)
+			}
+			if !tt.wantErr && !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Match() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -217,44 +259,62 @@ func TestGoParser_Match(t *testing.T) {
 
 func TestGoParser_Evaluate(t *testing.T) {
 	tests := []struct {
-		name string
-		expr string
-		data map[string]interface{}
-		want interface{}
+		name        string
+		expr        string
+		data        map[string]interface{}
+		want        interface{}
+		wantErr     bool
+		wantErrMsg  string
 	}{
 		{
 			name: "arithmetic int",
 			expr: "a + b",
 			data: map[string]interface{}{"a": 1, "b": 2},
-			want: int64(3),
+			want:    int64(3),
+			wantErr: false,
 		},
 		{
 			name: "arithmetic float",
 			expr: "a + b",
 			data: map[string]interface{}{"a": 1.2, "b": 2.3},
-			want: 3.5,
+			want:    3.5,
+			wantErr: false,
 		},
 		{
 			name: "bool expression",
 			expr: "a == 1 && b == 2",
 			data: map[string]interface{}{"a": 1, "b": 2},
-			want: true,
+			want:    true,
+			wantErr: false,
 		},
 		{
 			name: "function max",
 			expr: "max(a,b,5)",
 			data: map[string]interface{}{"a": 1, "b": 3},
-			want: 5.0,
+			want:    5.0,
+			wantErr: false,
+		},
+		{
+			name: "missing parameter",
+			expr: "a + missing",
+			data: map[string]interface{}{"a": 1},
+			want:       nil,
+			wantErr:    true,
+			wantErrMsg: "no parameter missing",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := Evaluate(tt.expr, tt.data)
-			if err != nil {
-				t.Fatalf("Evaluate failed: %v", err)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Evaluate() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
+			if tt.wantErr && err != nil && !strings.Contains(err.Error(), tt.wantErrMsg) {
+				t.Errorf("Evaluate() error message = %v, wantErrMsg %v", err.Error(), tt.wantErrMsg)
+			}
+			if !tt.wantErr && !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Evaluate(%q) = %#v, want %#v", tt.expr, got, tt.want)
 			}
 		})

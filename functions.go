@@ -5,7 +5,7 @@ import (
 	"go/ast"
 )
 
-// 注册可执行函数
+// Register executable functions
 var funcNameMap = map[string]func(args []ast.Expr, data map[string]interface{}) interface{}{}
 
 func init() {
@@ -16,7 +16,7 @@ func init() {
 	}
 }
 
-// maxFunc 取多个数中的最大值
+// maxFunc takes the maximum value among multiple numbers
 func maxFunc(args []ast.Expr, data map[string]interface{}) interface{} {
 	if len(args) == 0 {
 		return errors.New("func max requires at least one argument")
@@ -42,7 +42,7 @@ func maxFunc(args []ast.Expr, data map[string]interface{}) interface{} {
 	return maxFloat
 }
 
-// minFunc 取多个数中的最小值
+// minFunc takes the minimum value among multiple numbers
 func minFunc(args []ast.Expr, data map[string]interface{}) interface{} {
 	if len(args) == 0 {
 		return errors.New("func min requires at least one argument")
@@ -68,16 +68,16 @@ func minFunc(args []ast.Expr, data map[string]interface{}) interface{} {
 	return minFloat
 }
 
-// inArray 判断变量是否存在在数组中
+// inArray checks if a variable exists in an array
 func inArray(args []ast.Expr, data map[string]interface{}) interface{} {
-	// 规则表达式中的变量
+	// Variables in rule expressions
 	param := eval(args[0], data)
 	vRange, ok := args[1].(*ast.CompositeLit)
 	if !ok {
 		return errors.New("func in_array 2ed params is not a composite lit")
 	}
 
-	// 规则表达式中数组里的元素
+	// Elements in arrays in rule expressions
 	eltNodes := make([]interface{}, 0, len(vRange.Elts))
 	for _, p := range vRange.Elts {
 		elt := eval(p, data)
